@@ -18,6 +18,7 @@ import { remark } from "npm:remark@^14.0.3";
 import { visit } from "npm:unist-util-visit@^5.0.0";
 import { resolve } from "node:path";
 
+
 core.startGroup("process.env");
 console.table(process.env);
 core.endGroup();
@@ -51,14 +52,11 @@ await $`git config user.email 41898282+github-actions[bot]@users.noreply.github.
 
 await appendFile(".git/info/exclude", core.getInput("ignore"));
 await copy(resolve(workspacePath, core.getInput("path")), process.cwd());
+//Copy README.md
+await copy(resolve(workspacePath, "README.md"), resolve(process.cwd(), "Home.md"));
+console.log("Copied README.md as Home.md");
 
 if (core.getBooleanInput("preprocess")) {
-  // https://github.com/nodejs/node/issues/39960
-  if (existsSync("README.md")) {
-    await rename("README.md", "Home.md");
-    console.log("Moved README.md to Home.md");
-  }
-
   const mdRe = /\.(?:md|markdown|mdown|mkdn|mkd|mdwn|mkdown|ron)([:\/\?#\[\]@].*)?$/;
   const plugin = () => (tree: any) =>
     visit(tree, ["link", "linkReference"], (node: any) => {
